@@ -1,9 +1,15 @@
 numpy
 pandas
 scikit-learn
+streamlit-option-menu
+streamlit-plotly-events
+streamlit-extras
+graphviz
+imblearn
+pipeline
+pydotplus
+kaleido
 DateTime
 plotly
 TIME-python
-streamlit_pandas_profiling
-ydata_profiling
 matplotlib
