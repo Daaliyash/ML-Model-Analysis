@@ -210,10 +210,6 @@ def plot_columns(df, opt, sigma, est_sigma, curve):
         stddev = std(df[opt])
     if est_sigma:
         stddev = est_std(df, opt)
-        # cor = []
-        # for i in df[opt]:
-        #     cor.append((i-mean)**2)
-        # stddev = math.sqrt(sum(cor)/len(df[opt])-1)
     fig = px.histogram(df, x=opt, color_discrete_map={'EXCLUDE':'#D22B2B', 'INCLUDE':'#30B9EF'}, color='EXCLUDE/INCLUDE')
     fig.update_layout(legend_title_text='Data Points')
     fig.update_traces(xbins_size= (df[opt].max()-df[opt].min())/math.sqrt(len(df[opt]))) 
@@ -271,8 +267,6 @@ def regre(df, indep_vars, dep_vars):
     X = df[indep_vars]
     y = df[dep_vars[0]]
     oversample = SMOTE()
-    # undersample = 
-
     if len(y.unique()) >= 10:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=21)
         rfr = RandomForestRegressor(max_depth = 5, max_leaf_nodes=12)
@@ -297,8 +291,8 @@ def regre(df, indep_vars, dep_vars):
         st.session_state.predicted = y_pred
         mse = mean_squared_error(y_test, y_pred)
         rmse = mse**0.5
-        # progress_bar = st.progress(0)
-        # status_text = st.empty()
+        progress_bar = st.progress(0)
+        status_text = st.empty()
         col6, col7 = st.columns([3,1])
         acc = rfr.score(X_test, y_test)*100
         with col6.container(border=True):
@@ -308,30 +302,6 @@ def regre(df, indep_vars, dep_vars):
                 time.sleep(0.02)
             plot_chart(y_test, y_pred)
         with col7.container(border=True):
-            # num_steps = 100  
-            # colors = []
-            # pred_dict = {}
-            # val = acc
-            # min = float(df[dep_vars].min())
-            # maxim = float(df[dep_vars].max())
-            # steps = (min+maxim)/100
-            # for i in range(num_steps):
-            #     red = 255.0 if i < num_steps / 2 else 1.0 - (2.0 * (i - num_steps / 2) / num_steps)
-            #     green = 1.0 - abs(i - num_steps / 2) / num_steps
-            #     blue = 1.0 if i >= num_steps / 2 else 1.0 - (2.0 * (num_steps / 2 - i) / num_steps)
-            #     colors.append((red, green, blue))
-            # for i in range(num_steps):
-            #     if min<=val and min+steps>=val:
-            #         pred_dict[str(min)] = (0,0,0)
-            #         pred_dict[str(min+steps)] = (0,0,0)
-            #     else:
-            #         pred_dict[str(min)] = colors[i]
-            #     min+=steps
-            # color_pal = pred_dict.values()
-            # plt.figure(figsize=(10, 2))
-            # plt.imshow([list(color_pal)], extent=[0, num_steps, 0, 1])
-            # plt.axis('off')
-            # st.pyplot(plt)
             st.info(f'''**Error Margin**: {rmse.round(3)} \n\n **Accuracy**: {acc.round(2)}% \n\n **Time Took**: {round((time.time()-start),2)} secs''')
             num_steps = 100
             steps = (df[dep_vars].max()[0] - df[dep_vars].min()[0]) / 99
@@ -759,44 +729,6 @@ elif st.session_state.page == 1:
                     
                     if st.session_state['histogram_df'] is None:
                         st.session_state['histogram_df'] = st.session_state['data_header_df']
-                    # with tab1:
-                    #     with stylable_container(
-                    #         key='h3',
-                    #         css_styles="""
-                    #             h3 {
-                    #                 font-size: 16px;
-                    #             }
-                    #         """
-                    #     ):
-                    #         st.subheader('Correlation Matrix Heatmap')
-                    #     heatmap = correlation(st.session_state['histogram_df'][st.session_state['histogram_df'].columns[:-1]])
-                    #     # config = {'displayModeBar':False}
-                    #     heatmap_selected = plotly_events(
-                    #         heatmap,
-                    #         click_event=True
-                    #     )
-                    #     # st.plotly_chart(heatmap, use_container_width=True, config=config)
-                        
-                    #     if heatmap_selected:
-                    #         st.session_state['col_name'].add(heatmap_selected[0]['x'])
-                    #         st.session_state['col_name'].add(heatmap_selected[0]['y'])
-                    #     cols = list(st.session_state['col_name'])
-                    #     if len(st.session_state['col_name'])!= 0:
-                    #         st.write("Columns selected:")
-                    #         st.text(st.session_state['col_name'])
-                    #     if st.button('Preview'):
-                    #         with stylable_container(
-                    #         key='h3',
-                    #         css_styles="""
-                    #             h3 {
-                    #                 font-size: 16px;
-                    #             }
-                    #         """
-                    #         ):
-                    #             st.subheader('Filtered Dataset Preview')
-                    #         st.session_state['corr_df'] = st.session_state['histogram_df'][cols]
-                    #         st.dataframe(st.session_state['corr_df'], hide_index=True, use_container_width=True)
-                    # with tab2:
                     table = r_square(st.session_state['corr_df'][st.session_state['corr_df'].columns[:-1]])
                     st.dataframe(table, width=600, hide_index=True)
                              
@@ -844,13 +776,8 @@ elif st.session_state.page == 1:
                     c1, c2, c3, c4 = st.columns(4)
                     with c1:
                         ols = st.toggle('Regression line')
-                    # with c2:
-                    #     exchange = st.toggle('Show distribution')
                     with c3:
                         EXCLUDE = st.toggle('EXCLUDE Selected points')
-                    
-                    # OLS Results
-                    # df.drop(['Exluce/INCLUDE'], axis=1, inplace=True)
                     fig = px.scatter(st.session_state['corr_df'], x=x_axis, y=y_axis, color_discrete_sequence=['#30B9EF'], trendline='ols') 
                     res = px.get_trendline_results(fig)
                     results = res.iloc[0]['px_fit_results']
@@ -869,17 +796,7 @@ elif st.session_state.page == 1:
                         """
                     ):
                         st.subheader('OLS Results')
-                    st.dataframe(res_df, hide_index=True, use_container_width=True)
-                    # with stylable_container(
-                    #     key='tab',
-                    #     css_styles="""
-                    #         table {
-                    #             border: None !important;
-                    #             margin-top:20px;
-                    #             width:1400px;
-                    #         }
-                    #     """
-                    # ):    
+                    st.dataframe(res_df, hide_index=True, use_container_width=True)  
                     scatter_chart = interactive_plot(st.session_state['corr_df'], x_axis, y_axis, ols)
                     with stylable_container(
                         key='tab',
@@ -978,46 +895,10 @@ elif st.session_state.page == 1:
                 for i in dd_arr:
                     dot_data = dot_data.replace(i,'white')
                 st.graphviz_chart(dot_data)
-                # st.graphviz_chart(dot_data.splitlines())
-                # f=graphviz.Digraph(filename='output/filled_colorful_organogram.gv')
-                # names = ["A","B","C","D","E","F","G","H"]
-                # positions = ["CEO","Team A Lead","Team B Lead", "Staff A","Staff B", "Staff C", "Staff D", "Staff E"]
-                # colors = ["black", "skyblue", "mistyrose", "skyblue", "skyblue", "mistyrose", "mistyrose", "mistyrose"]
-                # for name, position, color in zip(names, positions, colors):
-                #     if name== "A":
-                #         f.node(name, position, color = color)
-                #     else:
-                #         f.node(name, position, style = "filled", color = color)
-                    
-                # #Specify edges
-                # f.edge("A","B"); f.edge("A","C")   #CEO to Team Leads
-                # f.edge("B","D"); f.edge("B","E")   #Team A relationship
-                # f.edge("C","F"); f.edge("C","G"); f.edge("C","H")   #Team B relationship
-                # st.graphviz_chart(f)
-                # for i in gr:
-                #     dot
-                # gr.format = "png"``
-                # st.image("file_name.png")
-                # st.graphviz_chart(gr)
-                # graph = pydotplus.graph_from_dot_data(dot_data)
-                # # st.write(graph.get_node_list()[2].get_attributes()['label'].split('<br/>'))
-                # for node in graph.get_node_list():
-                #     if node.get_attributes().get('label') is None:
-                #         continue
-                #     if 'samples = ' in node.get_attributes()['label']:
-                #         labels = node.get_attributes()['label'].split('<br/>')
-                #         for i, label in enumerate(labels):
-                #             if label.startswith('samples = '):
-                #                 labels[i] = 'samples = 0'
-                #         node.set('label', '<br/>'.join(labels))
-                #         node.set_fillcolor('white')
-                # st.image(graph.create_png())
             except:
                 st.warning(f"Please run the AI model and the choose the Decision Tree Analysis")
 
         with t4:
-            # st.session_state.dep_vars
-            # st.write(data[st.session_state.dep_vars[0]].unique().to_array())
             if st.session_state.reg:
                 model = st.session_state['model']
                 try:
@@ -1036,10 +917,6 @@ elif st.session_state.page == 1:
                         # checkpoint_val = slider_val
                         if st.session_state['checkpoint'] is None:
                             st.session_state['checkpoint'] = slider_val
-                        # if st.button('Save Checkpoint'):
-                        #     st.session_state['checkpoint'] = slider_val
-                        # for i in st.session_state.indep_vars:
-                        #     slider_val.append(st.number_input(label = i, min_value = float(st.session_state['filter_df'][i].min()), max_value = float(st.session_state['filter_df'][i].max())))
                     with col2:
                         dd_arr = []
                         for i in range(len(dot_data)):
@@ -1047,18 +924,6 @@ elif st.session_state.page == 1:
                                 dd_arr.append(dot_data[i+11:i+18])
                         for i in dd_arr:
                             dot_data = dot_data.replace(i,'white')
-                        # graph = pydotplus.graph_from_dot_data(dot_data)
-                        # for node in graph.get_node_list():
-                        #     if node.get_attributes().get('label') is None:
-                        #         continue
-                        #     if 'samples = ' in node.get_attributes()['label']:
-                        #         labels = node.get_attributes()['label'].split('<br/>')
-                        #         for i, label in enumerate(labels):
-                        #             if label.startswith('samples = '):
-                        #                 labels[i] = 'samples = 0'
-                        #         node.set('label', '<br/>'.join(labels))
-                        #         node.set_fillcolor('white')
-                        # cols = [i for i in range(len(slider_val))]
                         samples = pd.DataFrame(data=[slider_val], columns=st.session_state['filter_df'].columns[:-1])
                         samples1 = []
                         decision_paths = model.estimators_[0].decision_path(samples).toarray()[0]
@@ -1071,7 +936,6 @@ elif st.session_state.page == 1:
                         str3 = []
                         str4 = []
                         for n,dec in enumerate(decision_paths):
-                        # st.write(dot_data.splitlines()[20])
                             if dec == 1 and n < 10:
                                 for i in range(len(string1)):
                                     if string1[i][:3] == f"{n} [":
@@ -1086,8 +950,6 @@ elif st.session_state.page == 1:
                                         str2.append(string1[i])
                         for i in range(len(str1)):
                             dot_data = dot_data.replace(str1[i],str2[i])
-                        # dot_data
-
                         for n,dec in enumerate(decision_paths1):
                             # st.write(dot_data.splitlines()[20])
                             if dec == 1 and n < 10:
@@ -1110,51 +972,9 @@ elif st.session_state.page == 1:
                                         str4.append(string1[i])
                         for i in range(len(str3)):
                             dot_data = dot_data.replace(str3[i],str4[i])
-                        # dot_data
                         st.graphviz_chart(dot_data)
-                        # st.write(dot_data.splitlines())
-                        # st.write(decision_paths[14])
-                        # for decision_path in decision_paths:
-                        #     for n, node_value in enumerate(decision_path.toarray()[0]):
-                        #         if node_value == 0:
-                        #             continue
-                        #         node = graph.get_node(str(n))[0]            
-                        #         node.set_fillcolor('green')
-                        #         labels = node.get_attributes()['label'].split('<br/>')
-                        #         for i, label in enumerate(labels):
-                        #             if label.startswith('samples = '):
-                        #                 labels[i] = 'samples = {}'.format(int(label.split('=')[1]) + 1)
-                        #         node.set('label', '<br/>'.join(labels))
-                        # st.image(graph.create_png())
-                    
                     pred = model.predict([slider_val])
-                    # num_steps = 100  
-                    # colors = []
-                    # pred_dict = {}
-                    # val = pred
-                    # min = float(st.session_state['filter_df'][st.session_state.dep_vars].min())
-                    # maxim = float(st.session_state['filter_df'][st.session_state.dep_vars].max())
-                    # steps = (min+maxim)/100
-                    # for i in range(num_steps):
-                    #     red = 255.0 if i < num_steps / 2 else 1.0 - (2.0 * (i - num_steps / 2) / num_steps)
-                    #     green = 1.0 - abs(i - num_steps / 2) / num_steps
-                    #     blue = 1.0 if i >= num_steps / 2 else 1.0 - (2.0 * (num_steps / 2 - i) / num_steps)
-                    #     colors.append((red, green, blue))
-                    # for i in range(num_steps):
-                    #     if min<=val and min+steps>=val:
-                    #         pred_dict[str(min)] = (0,0,0)
-                    #         pred_dict[str(min+steps)] = (0,0,0)
-                    #     else:
-                    #         pred_dict[str(min)] = colors[i]
-                    #     min+=steps
-                    # color_pal = pred_dict.values()
-                    # plt.figure(figsize=(10, 2))
-                    # plt.imshow([list(color_pal)], extent=[0, num_steps, 0, 1])
-                    # plt.axis('off')
                     with st.container(border=True):
-                        # st.write('Predicted Value')
-                        # st.pyplot(plt, use_container_width=True)
-                        # st.slider('', float(st.session_state['filter_df'][st.session_state.dep_vars].min()), float(st.session_state['filter_df'][st.session_state.dep_vars].max()), float(pred[0]), disabled=True)
                         st.info(f'Predicted value is {float(pred[0])}')
                 except AttributeError:
                     st.warning('Please select your Independent and Dependent variables')
