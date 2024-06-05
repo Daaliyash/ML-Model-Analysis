@@ -55,7 +55,7 @@ font = """
 """
 st.markdown(font, unsafe_allow_html=True)
  
-with open('.streamlit/config.toml', 'r') as f:
+with open('config.toml', 'r') as f:
     config = toml.load(f)
 
 if 'button_clicked' not in st.session_state:
